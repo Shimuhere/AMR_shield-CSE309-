@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Registered Surveillance Pharmacies</h1>
+        <div class="flex gap-2">
+            <button class="btn-secondary">Audit Network</button>
+            <button class="btn-primary" onclick="toggleAddForm()">Register New Pharmacy</button>
+        </div>
+    </div>
+
+    <!-- Add Pharmacy Form (Hidden by default) -->
+    <div id="add-pharmacy-form" class="data-card p-6 hidden">
+        <h2 class="text-lg font-bold mb-4">Add New Pharmacy</h2>
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Username</label>
+                    <input type="text" name="username" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Password</label>
+                    <input type="password" name="password" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pharmacy Name</label>
+                        <input type="text" name="name" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Address</label>
+                        <textarea name="address" rows="2" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm"></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Latitude</label>
+                            <input type="text" id="add-lat" name="latitude" required readonly class="w-full p-2 border border-gray-100 bg-gray-50 rounded text-sm text-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Longitude</label>
+                            <input type="text" id="add-lng" name="longitude" required readonly class="w-full p-2 border border-gray-100 bg-gray-50 rounded text-sm text-gray-500">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-gray-400 italic mt-2">Click on the map to set pharmacy location.</p>
+                </div>
+                <div>
+                    <div id="add-map" class="h-64 w-full border border-gray-200 rounded"></div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t border-gray-100 pt-4">
+                <button type="button" class="btn-secondary" onclick="toggleAddForm()">Cancel</button>
+                <button type="submit" name="action" value="add" class="btn-primary">Save Pharmacy</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="data-card overflow-hidden">
+        <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 text-gray-500 uppercase font-bold border-b border-gray-200">
+                <tr>
+                    <th class="px-6 py-4">Pharmacy Name</th>
+                    <th class="px-6 py-4">Address</th>
+                    <th class="px-6 py-4">Coordinates</th>
+                    <th class="px-6 py-4">Total Sales</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for p in pharmacies %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 font-semibold text-gray-900">{{ p.name }}</td>
+                    <td class="px-6 py-4 text-gray-500 text-xs">{{ p.address }}</td>
+                    <td class="px-6 py-4 font-mono text-[10px] text-gray-400">{{ p.latitude|stringformat:".4f" }}, {{ p.longitude|stringformat:".4f" }}</td>
+                    <td class="px-6 py-4 font-medium">{{ p.sales.count }}</td>
+                    <td class="px-6 py-4 text-right flex justify-end gap-3">
+                        <a href="{% url 'pharmacy_edit' p.id %}" class="text-blue-600 hover:underline font-bold text-xs uppercase tracking-tighter">Edit</a>
+                        <a href="{% url 'pharmacy_delete' p.id %}" onclick="return confirm('Delete this pharmacy and all its data? This cannot be undone.')" class="text-red-600 hover:underline font-bold text-xs uppercase tracking-tighter">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+let addMap;
+let addMarker;
+
+function toggleAddForm() {
+    const form = document.getElementById('add-pharmacy-form');
+    const isHidden = form.classList.toggle('hidden');
+    
+    if (!isHidden) {
+        if (!addMap) {
+            initAddMap();
+        } else {
+            setTimeout(() => { addMap.invalidateSize(); }, 100);
+        }
+    }
+}
+
+function initAddMap() {
+    // Default to Dhaka
+    addMap = L.map('add-map').setView([23.8103, 90.4125], 11);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20
+    }).addTo(addMap);
+
+    addMap.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        document.getElementById('add-lat').value = lat.toFixed(6);
+        document.getElementById('add-lng').value = lng.toFixed(6);
+        
+        if (addMarker) {
+            addMarker.setLatLng(e.latlng);
+        } else {
+            addMarker = L.marker(e.latlng).addTo(addMap);
+        }
+    });
+}
+</script>
+{% endblock %}

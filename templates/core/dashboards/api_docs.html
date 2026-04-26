@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">API Connection Guide</h1>
+        <div class="flex items-center gap-2">
+            <span class="px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase rounded">Developer Mode</span>
+        </div>
+    </div>
+
+    <div class="data-card p-8 space-y-10">
+        <!-- Introduction -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Overview</h2>
+            <p class="text-sm text-gray-600 leading-relaxed">
+                Connect your pharmacy's existing sales or billing software directly to the AMR-Shield network. This allows you to skip manual data entry while remaining compliant with national antibiotic tracking rules.
+            </p>
+        </section>
+
+        <!-- Authentication -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Authentication</h2>
+            <p class="text-sm text-gray-600 leading-relaxed">
+                Use your standard pharmacy login credentials to authenticate API requests via Basic Auth.
+            </p>
+            <div class="bg-gray-900 rounded-lg p-5">
+                <code class="text-blue-400 text-xs font-mono">Authorization: Basic [Base64 Encoded Username:Password]</code>
+            </div>
+        </section>
+
+        <!-- Endpoint -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Sales Endpoint</h2>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase rounded">POST</span>
+                    <code class="text-sm font-mono text-gray-800 bg-gray-50 p-1 rounded">/api/sales/</code>
+                </div>
+                <p class="text-sm text-gray-600">Send sale data in JSON format.</p>
+            </div>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest">Example JSON Payload</h3>
+                <pre class="text-xs font-mono text-gray-800 leading-relaxed overflow-x-auto">
+{
+    "antibiotic_name": "Azithromycin",
+    "quantity": 3,
+    "patient_age": 28,
+    "patient_gender": "F",
+    "doctor_name": "Dr. Sarah Khan",
+    "prescription_reference": "TX-44021"
+}</pre>
+            </div>
+        </section>
+
+        <!-- Response Codes -->
+        <section class="space-y-4">
+            <h2 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">System Responses</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 border border-gray-100 rounded">
+                    <p class="text-xs font-bold text-green-600 mb-1">201 Created</p>
+                    <p class="text-[11px] text-gray-500">Sale successfully recorded and synced.</p>
+                </div>
+                <div class="p-4 border border-gray-100 rounded">
+                    <p class="text-xs font-bold text-red-600 mb-1">403 Forbidden</p>
+                    <p class="text-[11px] text-gray-500">Authentication failed or role mismatch.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- <div class="flex justify-end">
+        <a href="{% url 'pharmacy_dashboard' %}" class="btn-primary">Return to Console</a>
+    </div> -->
+</div>
+{% endblock %}

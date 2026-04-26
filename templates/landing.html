@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block landing_content %}
+<div class="max-w-6xl mx-auto px-6 py-16 space-y-24">
+    <!-- Hero Section -->
+    <section class="text-center space-y-8">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight">
+            Track antibiotic sales and <br>
+            <span class="text-blue-600">monitor health risks.</span>
+        </h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            A simple system to help pharmacies, patients, and the health ministry keep track of medicine usage and see warnings in their local areas.
+        </p>
+        <div class="flex justify-center gap-4">
+            <a href="{% url 'login' %}" class="btn-primary px-8 py-3">Sign In</a>
+            <a href="#how-it-works" class="btn-secondary px-8 py-3">Learn More</a>
+        </div>
+    </section>
+
+    <!-- Key Services -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="space-y-4">
+            <div class="w-12 h-12 flex items-center justify-center text-blue-600 text-3xl">
+                <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900">Area-based Tracking</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">See which medicines are being used the most in different cities and areas using our local map.</p>
+        </div>
+        <div class="space-y-4">
+            <div class="w-12 h-12 flex items-center justify-center text-blue-600 text-3xl">
+                <i class="fa-solid fa-file-medical"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900">Simple Reports</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">Get clear summaries of medicine sales and usage history for any pharmacy or patient.</p>
+        </div>
+        <div class="space-y-4">
+            <div class="w-12 h-12 flex items-center justify-center text-blue-600 text-3xl">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900">Usage Alerts</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">Get notified if a medicine has high usage in your area so you can stay safe and informed.</p>
+        </div>
+    </section>
+
+    <!-- Detailed How-To -->
+    <section id="how-it-works" class="bg-white rounded-xl border border-gray-200 p-10 md:p-16">
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-900">How to use the system</h2>
+            <p class="text-gray-500 mt-2">Follow these simple steps based on your role.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+            <!-- Pharmacies -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 text-blue-600">
+                    <i class="fa-solid fa-house-medical"></i>
+                    <h4 class="font-bold uppercase tracking-wider text-xs">For Pharmacies</h4>
+                </div>
+                <ul class="space-y-4 text-sm text-gray-600">
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">1.</span>
+                        <span>Log in to your pharmacy dashboard.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">2.</span>
+                        <span>Record sales as they happen or connect your own software.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">3.</span>
+                        <span>All data is sent safely to the central system.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Patients -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 text-blue-600">
+                    <i class="fa-solid fa-user-doctor"></i>
+                    <h4 class="font-bold uppercase tracking-wider text-xs">For Patients</h4>
+                </div>
+                <ul class="space-y-4 text-sm text-gray-600">
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">1.</span>
+                        <span>Create a free account and set your location on the map.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">2.</span>
+                        <span>Keep a history of the medicines you take.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">3.</span>
+                        <span>Check for health alerts in your area anytime.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Government -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 text-blue-600">
+                    <i class="fa-solid fa-building-shield"></i>
+                    <h4 class="font-bold uppercase tracking-wider text-xs">For Health Officials</h4>
+                </div>
+                <ul class="space-y-4 text-sm text-gray-600">
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">1.</span>
+                        <span>Monitor the nationwide risk map.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">2.</span>
+                        <span>Change usage limits to trigger alerts.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-bold text-blue-600">3.</span>
+                        <span>Download full reports for better health planning.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Test Accounts -->
+    <section class="p-8 border border-gray-200 rounded-xl bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="space-y-2 text-center md:text-left">
+            <h2 class="text-xl font-bold text-gray-900">Try our demo</h2>
+            <p class="text-sm text-gray-500 italic">Use these accounts to explore the Bangladesh demo data.</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-4">
+            <div class="bg-white p-4 border border-gray-100 rounded text-xs shadow-sm">
+                <p class="font-bold text-gray-400 uppercase mb-1">Health Official</p>
+                <p class="font-mono text-blue-600">gov_admin / admin123</p>
+            </div>
+            <div class="bg-white p-4 border border-gray-100 rounded text-xs shadow-sm">
+                <p class="font-bold text-gray-400 uppercase mb-1">Pharmacy</p>
+                <p class="font-mono text-blue-600">pharmacy_1 / pharm123</p>
+            </div>
+            <div class="bg-white p-4 border border-gray-100 rounded text-xs shadow-sm">
+                <p class="font-bold text-gray-400 uppercase mb-1">Patient</p>
+                <p class="font-mono text-blue-600">john_doe / user123</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

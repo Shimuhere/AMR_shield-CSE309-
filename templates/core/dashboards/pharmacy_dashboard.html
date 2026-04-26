@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Pharmacy Sales Terminal</h1>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Connected</span>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="data-card p-5">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Today's Sales</div>
+            <div class="text-2xl font-light text-gray-900">{{ stats.today_transactions }} <span class="text-xs font-normal text-gray-400 italic">Items</span></div>
+        </div>
+        <div class="data-card p-5">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Today's Units</div>
+            <div class="text-2xl font-light text-gray-900">{{ stats.today_units }} <span class="text-xs font-normal text-gray-400 italic">Total</span></div>
+        </div>
+        <div class="data-card p-5">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total History</div>
+            <div class="text-2xl font-light text-gray-900">{{ stats.total_units }}</div>
+        </div>
+        <div class="data-card p-5 border-l-4 border-l-blue-600">
+            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Account Status</div>
+            <div class="text-xs font-bold text-green-600 mt-2 uppercase tracking-tighter">Verified Pharmacy</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <!-- Sale Form Section -->
+        <div class="xl:col-span-8 space-y-6">
+            <div class="data-card p-8 shadow-sm">
+                <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-8 border-b border-gray-100 pb-2">Record New Sale</h2>
+                <form method="post" class="space-y-8">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-1 relative" id="antibiotic-dropdown-container">
+                            <label class="block text-[10px] font-bold uppercase text-gray-500">Medicine Name</label>
+                            <div class="relative">
+                                <input type="text" id="antibiotic-search" name="antibiotic_name" autocomplete="off" placeholder="Start typing medicine name..." required 
+                                    class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50 pr-8 transition-all">
+                                <div class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </div>
+                            </div>
+                            <!-- Dropdown List -->
+                            <div id="antibiotic-options" class="absolute left-0 right-0 z-[100] mt-1 hidden bg-white border border-gray-200 rounded shadow-xl max-h-60 overflow-y-auto">
+                                {% for a in antibiotics %}
+                                <div class="px-4 py-2.5 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-50 flex justify-between items-center antibiotic-option" 
+                                     data-name="{{ a.name }}">
+                                    <span class="font-semibold text-gray-900">{{ a.name }}</span>
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{{ a.category }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold uppercase text-gray-500">Sales Quantity</label>
+                            <input type="number" name="quantity" value="1" min="1" class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold uppercase text-gray-500">Patient Age</label>
+                            <input type="number" name="patient_age" placeholder="Age" class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold uppercase text-gray-500">Gender</label>
+                            <select name="patient_gender" class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50">
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                                <option value="O">Other</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold uppercase text-gray-500">Prescription Ref</label>
+                            <input type="text" name="prescription_reference" placeholder="Serial/Ref #" class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50">
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">Prescribing Doctor</label>
+                        <input type="text" name="doctor_name" placeholder="Doctor's name" class="w-full p-2.5 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50">
+                    </div>
+
+                    <button type="submit" class="w-full btn-primary py-4 text-sm tracking-widest uppercase">Save Sale Record</button>
+                </form>
+            </div>
+
+            <div class="data-card p-5 bg-gray-50 border-dashed border-gray-300 flex items-start gap-4">
+                <div class="w-10 h-10 bg-white border border-gray-200 rounded flex items-center justify-center text-gray-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="text-xs font-bold text-gray-700">Connect Sales Software</h3>
+                    <p class="text-[10px] text-gray-500 leading-relaxed">
+                        To automatically send sales data from your computer's software, follow our <a href="{% url 'api_docs' %}" class="text-blue-600 font-bold hover:underline">API Connection Guide</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Recent History -->
+        <div class="xl:col-span-4 flex flex-col h-full">
+            <div class="data-card flex flex-col h-full overflow-hidden shadow-sm">
+                <div class="bg-gray-50 border-b border-gray-200 px-5 py-3 text-center">
+                    <h3 class="text-xs font-bold text-gray-600 uppercase tracking-widest">Recent Sales</h3>
+                </div>
+                <div class="overflow-y-auto flex-grow divide-y divide-gray-100 bg-white">
+                    {% for sale in sales %}
+                        <div class="p-5 hover:bg-gray-50 transition-all group">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-900">{{ sale.antibiotic.name }}</span>
+                                    <span class="text-[9px] font-black text-blue-600 uppercase tracking-tighter">{{ sale.antibiotic.category }}</span>
+                                </div>
+                                <span class="text-[11px] font-black text-gray-900 bg-gray-100 px-2 py-0.5 rounded">x{{ sale.quantity }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-[9px] text-gray-400 uppercase font-bold tracking-widest">
+                                <span>Ref: {{ sale.prescription_reference|default:"--" }}</span>
+                                <span>{{ sale.timestamp|date:"H:i" }}</span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="flex flex-col items-center justify-center py-20 text-center">
+                            <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 text-xl mb-4">📝</div>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
+                                No sales recorded today.
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <!-- <div class="bg-gray-50 border-t border-gray-200 p-3 text-center">
+                    <button class="text-[10px] font-bold text-blue-600 uppercase hover:underline">View All Sales History →</button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('antibiotic-search');
+    const optionsList = document.getElementById('antibiotic-options');
+    const options = document.querySelectorAll('.antibiotic-option');
+
+    searchInput.addEventListener('focus', () => {
+        optionsList.classList.remove('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('antibiotic-dropdown-container').contains(e.target)) {
+            optionsList.classList.add('hidden');
+        }
+    });
+
+    searchInput.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        let matchCount = 0;
+        
+        options.forEach(opt => {
+            const name = opt.getAttribute('data-name').toLowerCase();
+            if (name.includes(filter)) {
+                opt.style.display = '';
+                matchCount++;
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+        
+        optionsList.classList.toggle('hidden', matchCount === 0);
+    });
+
+    options.forEach(opt => {
+        opt.addEventListener('click', () => {
+            searchInput.value = opt.getAttribute('data-name');
+            optionsList.classList.add('hidden');
+        });
+    });
+});
+</script>
+{% endblock %}

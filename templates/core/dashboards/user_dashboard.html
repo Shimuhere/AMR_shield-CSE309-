@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">My Medicine Tracker</h1>
+        <div class="flex items-center gap-4">
+            {% if not user.latitude %}
+            <a href="{% url 'profile_settings' %}" class="flex items-center gap-2 px-3 py-1 bg-amber-50 border border-amber-100 rounded-full animate-pulse">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                <span class="text-[10px] font-bold text-amber-700 uppercase tracking-widest text-center">Set your area for health alerts</span>
+            </a>
+            {% else %}
+            <div class="flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-100 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                <span class="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Local Alerts are On</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Personal Alerts (Medicines you are taking) -->
+    {% if alerts %}
+        <div class="space-y-3">
+            {% for alert in alerts %}
+                <div class="p-5 bg-red-50 border-l-4 border-red-500 shadow-sm rounded flex items-center gap-5">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-red-500 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-xs font-black text-red-900 uppercase tracking-widest">Urgent: High usage of {{ alert.antibiotic }} in your area</h3>
+                        <p class="text-xs text-red-700 mt-1">This medicine is currently under government restriction due to very high local usage. Please follow your doctor's orders strictly.</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Add Medicine Form -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="data-card p-6 shadow-sm">
+                <h2 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-2">Add a new medicine</h2>
+                <form method="post" class="space-y-5">
+                    {% csrf_token %}
+                    <div class="space-y-1 relative" id="antibiotic-dropdown-container">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase">Medicine Name</label>
+                        <div class="relative">
+                            <input type="text" id="antibiotic-search" name="antibiotic_name" autocomplete="off" placeholder="Type medicine name..." required 
+                                class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50 pr-8 transition-all">
+                            <div class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                        <div id="antibiotic-options" class="absolute left-0 right-0 z-[100] mt-1 hidden bg-white border border-gray-200 rounded shadow-xl max-h-60 overflow-y-auto">
+                            {% for a in antibiotics %}
+                            <div class="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-50 flex justify-between items-center antibiotic-option" 
+                                 data-name="{{ a.name }}">
+                                <span class="font-semibold text-gray-900">{{ a.name }}</span>
+                                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">{{ a.group }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase">Dose (mg)</label>
+                            <input type="number" name="dosage" placeholder="e.g. 500" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase">Times per Day</label>
+                            <input type="number" name="frequency" placeholder="e.g. 2" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50">
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase">How many days?</label>
+                        <input type="number" name="duration_days" placeholder="Total days" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm bg-gray-50">
+                    </div>
+                    <button type="submit" class="w-full btn-primary py-3 text-xs uppercase tracking-widest mt-2">Save to My History</button>
+                </form>
+            </div>
+
+            <!-- Area-wide Alerts Section -->
+            <div class="data-card p-6 shadow-sm bg-gray-50 border-dashed">
+                <h2 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Health Alerts in Your Area</h2>
+                <div class="space-y-3">
+                    {% for aa in area_alerts %}
+                    <div class="flex items-center justify-between p-2 bg-white rounded border border-gray-100">
+                        <span class="text-xs font-bold text-gray-700">{{ aa.medicine }}</span>
+                        <span class="text-[8px] font-black uppercase px-1.5 py-0.5 rounded
+                            {% if aa.color == 'red' %}bg-red-100 text-red-700{% else %}bg-orange-100 text-orange-700{% endif %}">
+                            {{ aa.status }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-[10px] text-gray-400 italic">No major health alerts for your area at this time.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="lg:col-span-8">
+            <div class="data-card overflow-hidden shadow-sm">
+                <div class="bg-gray-50 border-b border-gray-200 px-5 py-3">
+                    <h3 class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">My Medicine History</h3>
+                </div>
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-white text-gray-400 uppercase font-bold border-b border-gray-100">
+                        <tr>
+                            <th class="px-6 py-4">Medicine</th>
+                            <th class="px-6 py-4">Usage Instructions</th>
+                            <th class="px-6 py-4">Total Days</th>
+                            <th class="px-6 py-4">Local Status</th>
+                            <th class="px-6 py-4 text-right">Start Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50 bg-white">
+                        {% for p in prescriptions %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-gray-900">{{ p.antibiotic.name }}</span>
+                                    <span class="text-[9px] font-medium text-gray-400 uppercase tracking-tighter">{{ p.antibiotic.group }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 font-medium">{{ p.dosage }}mg, {{ p.frequency }} times a day</td>
+                            <td class="px-6 py-4 text-gray-600 font-medium">{{ p.duration_days }} Days</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-0.5 rounded-sm font-bold text-[8px] uppercase tracking-tighter
+                                    {% if p.risk_color == 'red' %}bg-red-50 text-red-700
+                                    {% elif p.risk_color == 'orange' %}bg-orange-50 text-orange-700
+                                    {% elif p.risk_color == 'yellow' %}bg-yellow-50 text-yellow-700
+                                    {% else %}bg-emerald-50 text-emerald-700{% endif %}">
+                                    {{ p.current_risk }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-right text-gray-400 font-mono text-[10px]">{{ p.date|date:"Y-m-d" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-20 text-center">
+                                <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"></path></svg>
+                                </div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">No history found.<br>Add a medicine on the left to start tracking.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('antibiotic-search');
+    const optionsList = document.getElementById('antibiotic-options');
+    const options = document.querySelectorAll('.antibiotic-option');
+
+    searchInput.addEventListener('focus', () => {
+        optionsList.classList.remove('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!document.getElementById('antibiotic-dropdown-container').contains(e.target)) {
+            optionsList.classList.add('hidden');
+        }
+    });
+
+    searchInput.addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        let matchCount = 0;
+        
+        options.forEach(opt => {
+            const name = opt.getAttribute('data-name').toLowerCase();
+            if (name.includes(filter)) {
+                opt.style.display = '';
+                matchCount++;
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+        
+        optionsList.classList.toggle('hidden', matchCount === 0);
+    });
+
+    options.forEach(opt => {
+        opt.addEventListener('click', () => {
+            searchInput.value = opt.getAttribute('data-name');
+            optionsList.classList.add('hidden');
+        });
+    });
+});
+</script>
+{% endblock %}

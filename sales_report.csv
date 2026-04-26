@@ -1,0 +1,14 @@
+Pharmacy,Antibiotic,Quantity,Patient Age,Gender,Doctor,Timestamp
+Dhaka Central Pharma,Azithromycin,120,45,Male,Dr. Ahmed,2026-04-25 19:26:07.562599+00:00
+Gulshan Meds,Azithromycin,25,41,Female,Dr. Local Clinical,2026-04-25 19:26:07.563927+00:00
+Gulshan Meds,Cefixime,38,21,Female,Dr. Local Clinical,2026-04-25 19:26:07.564274+00:00
+Chittagong Health Care,Cefixime,31,73,Female,Dr. Local Clinical,2026-04-25 19:26:07.564701+00:00
+Chittagong Health Care,Doxycycline,22,46,Female,Dr. Local Clinical,2026-04-25 19:26:07.565036+00:00
+Sylhet Drug House,Cefixime,44,28,Male,Dr. Local Clinical,2026-04-25 19:26:07.565323+00:00
+Sylhet Drug House,Amoxicillin,14,67,Male,Dr. Local Clinical,2026-04-25 19:26:07.565613+00:00
+Rajshahi Medicine Mart,Doxycycline,33,44,Male,Dr. Local Clinical,2026-04-25 19:26:07.566011+00:00
+Rajshahi Medicine Mart,Ciprofloxacin,6,20,Female,Dr. Local Clinical,2026-04-25 19:26:07.566340+00:00
+Khulna Pharmacy,Metronidazole,31,29,Female,Dr. Local Clinical,2026-04-25 19:26:07.566674+00:00
+Khulna Pharmacy,Cefixime,25,20,Male,Dr. Local Clinical,2026-04-25 19:26:07.566988+00:00
+Barisal Med Store,Amoxicillin,9,26,Male,Dr. Local Clinical,2026-04-25 19:26:07.567312+00:00
+Barisal Med Store,Ciprofloxacin,14,26,Male,Dr. Local Clinical,2026-04-25 19:26:07.567598+00:00

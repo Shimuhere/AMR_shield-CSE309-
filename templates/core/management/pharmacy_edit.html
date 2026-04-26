@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center gap-4">
+        <a href="{% url 'pharmacy_list' %}" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Edit Pharmacy: {{ profile.name }}</h1>
+    </div>
+
+    <div class="data-card p-8">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pharmacy Name</label>
+                        <input type="text" name="name" value="{{ profile.name }}" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Physical Address</label>
+                        <textarea name="address" rows="3" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm">{{ profile.address }}</textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Latitude</label>
+                            <input type="text" id="edit-lat" name="latitude" value="{{ profile.latitude }}" required readonly class="w-full p-2 border border-gray-100 bg-gray-50 rounded text-sm text-gray-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Longitude</label>
+                            <input type="text" id="edit-lng" name="longitude" value="{{ profile.longitude }}" required readonly class="w-full p-2 border border-gray-100 bg-gray-50 rounded text-sm text-gray-500">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-gray-400 italic mt-2">Click on the map to update the pharmacy location.</p>
+                </div>
+                <div>
+                    <div id="edit-map" class="h-64 w-full border border-gray-200 rounded"></div>
+                </div>
+            </div>
+            <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                <a href="{% url 'pharmacy_list' %}" class="btn-secondary text-sm">Cancel</a>
+                <button type="submit" class="btn-primary text-sm">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lat = {{ profile.latitude }};
+    const lng = {{ profile.longitude }};
+    
+    const editMap = L.map('edit-map').setView([lat, lng], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20
+    }).addTo(editMap);
+
+    let editMarker = L.marker([lat, lng]).addTo(editMap);
+
+    editMap.on('click', function(e) {
+        const newLat = e.latlng.lat;
+        const newLng = e.latlng.lng;
+        
+        document.getElementById('edit-lat').value = newLat.toFixed(6);
+        document.getElementById('edit-lng').value = newLng.toFixed(6);
+        
+        editMarker.setLatLng(e.latlng);
+    });
+});
+</script>
+{% endblock %}

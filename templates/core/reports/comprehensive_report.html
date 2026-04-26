@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AMR-Shield | Clinical Surveillance Report</title>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: white; color: #000; }
+        @media print {
+            .no-print { display: none; }
+            body { padding: 0; }
+            .report-page { border: none; box-shadow: none; padding: 0; margin: 0; }
+        }
+        .report-page {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 60px;
+            border: 1px solid #eee;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-6">
+    <div class="no-print max-w-[1000px] mx-auto mb-6 flex justify-between items-center">
+        <a href="{% url 'government_dashboard' %}" class="text-sm font-bold text-gray-500 hover:text-black flex items-center gap-2">
+            ← Back to Dashboard
+        </a>
+        <button onclick="window.print()" class="bg-black text-white px-6 py-2 rounded-md font-bold text-sm">
+            Print Full Report
+        </button>
+    </div>
+
+    <div class="report-page bg-white">
+        <!-- Header -->
+        <div class="flex justify-between items-start border-b-2 border-black pb-8 mb-10">
+            <div>
+                <h1 class="text-3xl font-black uppercase tracking-tighter">Clinical Surveillance Report</h1>
+                <p class="text-gray-500 font-medium mt-1">Antibiotic Resistance Monitoring Network (AMR-Shield)</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs font-bold uppercase text-gray-400">Date Generated</p>
+                <p class="text-lg font-bold">{{ report_date }}</p>
+            </div>
+        </div>
+
+        <!-- Section 1: Executive Summary -->
+        <div class="mb-12">
+            <h2 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-6 pb-2 border-b border-gray-100">1.0 Executive Summary</h2>
+            <div class="grid grid-cols-4 gap-8">
+                <div>
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Total Volume</p>
+                    <p class="text-2xl font-bold">{{ stats.total_units }} Units</p>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Active Nodes</p>
+                    <p class="text-2xl font-bold">{{ stats.active_pharmacies }} Pharmacies</p>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Patient Avg Age</p>
+                    <p class="text-2xl font-bold">{{ stats.avg_patient_age|stringformat:".1f" }} Yrs</p>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold uppercase text-gray-400">Risk Threshold</p>
+                    <p class="text-2xl font-bold">> {{ settings.high_risk_limit }} Units</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Regional Risk Analysis -->
+        <div class="mb-12">
+            <h2 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-6 pb-2 border-b border-gray-100">2.0 Regional Risk Assessment</h2>
+            <div class="space-y-8">
+                {% for location, drugs in summary_report.items %}
+                <div class="break-inside-avoid">
+                    <h3 class="text-sm font-black uppercase mb-4">{{ location }} Region</h3>
+                    <table class="w-full text-left text-xs border-t border-gray-200">
+                        <thead>
+                            <tr class="text-gray-400 font-bold uppercase">
+                                <th class="py-3 pr-4">Medication</th>
+                                <th class="py-3">Pharmacy</th>
+                                <th class="py-3">Volume</th>
+                                <th class="py-3 text-right">Surveillance Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for drug, pharmacies in drugs.items %}
+                                {% for p in pharmacies %}
+                                <tr>
+                                    <td class="py-3 pr-4 font-bold">{{ drug }}</td>
+                                    <td class="py-3">{{ p.pharmacy }}</td>
+                                    <td class="py-3">{{ p.units }} units</td>
+                                    <td class="py-3 text-right font-black uppercase text-[10px]">
+                                        <span class="{% if p.color == 'red' %}text-red-600{% elif p.color == 'orange' %}text-orange-500{% elif p.color == 'yellow' %}text-yellow-600{% else %}text-green-600{% endif %}">
+                                            {{ p.risk_level }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Section 3: Pharmacy Performance -->
+        <div class="mb-12 break-before-page">
+            <h2 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-6 pb-2 border-b border-gray-100">3.0 Pharmacy Distribution Log</h2>
+            <table class="w-full text-left text-xs border-t border-gray-200">
+                <thead>
+                    <tr class="text-gray-400 font-bold uppercase">
+                        <th class="py-3 pr-4">Pharmacy Name</th>
+                        <th class="py-3">Regional HQ</th>
+                        <th class="py-3">Transactions</th>
+                        <th class="py-3 text-right">Total Dispensed</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for p in pharmacy_sales %}
+                    <tr>
+                        <td class="py-3 pr-4 font-bold">{{ p.name }}</td>
+                        <td class="py-3">{{ p.address }}</td>
+                        <td class="py-3">{{ p.total_transactions }}</td>
+                        <td class="py-3 text-right font-bold">{{ p.total_units|default:0 }} Units</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Section 4: Patient Usage History -->
+        <div class="mb-12 break-before-page">
+            <h2 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-6 pb-2 border-b border-gray-100">4.0 Patient Usage Audit</h2>
+            <table class="w-full text-left text-xs border-t border-gray-200">
+                <thead>
+                    <tr class="text-gray-400 font-bold uppercase">
+                        <th class="py-3 pr-4">Patient Identifier</th>
+                        <th class="py-3">Medication</th>
+                        <th class="py-3">Dosage Regimen</th>
+                        <th class="py-3 text-right">Log Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for p in patient_usage %}
+                    <tr>
+                        <td class="py-3 pr-4 font-bold">{{ p.user.username }}</td>
+                        <td class="py-3">{{ p.antibiotic.name }}</td>
+                        <td class="py-3">{{ p.dosage }}mg ({{ p.frequency }}x Daily)</td>
+                        <td class="py-3 text-right">{{ p.date|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-20 border-t border-gray-200 pt-8 text-[10px] text-gray-400 leading-relaxed italic text-center">
+            This document is a formal clinical surveillance report generated by the AMR-Shield Intelligence Platform.<br>
+            Information contained herein is for official government health monitoring and regulatory purposes only.
+        </div>
+    </div>
+</body>
+</html>
