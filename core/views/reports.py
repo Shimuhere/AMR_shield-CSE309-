@@ -1,17 +1,18 @@
 import csv
 from datetime import datetime
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
+from ..decorators import role_required
 from ..models import SaleRecord, Prescription, PharmacyProfile, SystemSettings
 from ..utils.reporting import generate_surveillance_summary
 
 @login_required
+@role_required('GOVERNMENT')
 def comprehensive_report(request):
-    if request.user.role != 'GOVERNMENT': return redirect('dashboard_redirect')
     summary_report, stats = generate_surveillance_summary()
-    settings, _ = SystemSettings.objects.get_or_create(id=1)
+    settings = SystemSettings.load()
     context = {
         'summary_report': summary_report, 'stats': stats,
         'patient_usage': Prescription.objects.select_related('user', 'antibiotic').all().order_by('-date'),
@@ -21,8 +22,8 @@ def comprehensive_report(request):
     return render(request, 'core/reports/comprehensive_report.html', context)
 
 @login_required
+@role_required('GOVERNMENT')
 def export_sales_csv(request):
-    if request.user.role != 'GOVERNMENT': return HttpResponse("Unauthorized", status=401)
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="amr_surveillance_report.csv"'
     writer = csv.writer(response)

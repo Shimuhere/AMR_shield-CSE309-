@@ -1,64 +1,84 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from ..models import PharmacyProfile, Antibiotic, User
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from ..decorators import role_required
+from ..forms import AntibioticForm, PharmacyCreateForm, PharmacyProfileForm
+from ..models import Antibiotic, PharmacyProfile
+
 
 @login_required
+@role_required('GOVERNMENT')
 def pharmacy_list(request):
-    if request.user.role != 'GOVERNMENT': return redirect('dashboard_redirect')
+    form = PharmacyCreateForm()
     if request.method == 'POST' and request.POST.get('action') == 'add':
-        user = User.objects.create_user(
-            username=request.POST.get('username'), password=request.POST.get('password'), role='PHARMACY'
-        )
-        PharmacyProfile.objects.create(
-            user=user, name=request.POST.get('name'), address=request.POST.get('address'),
-            latitude=float(request.POST.get('latitude')), longitude=float(request.POST.get('longitude'))
-        )
-        return redirect('pharmacy_list')
-    return render(request, 'core/management/pharmacy_list.html', {'pharmacies': PharmacyProfile.objects.all()})
+        form = PharmacyCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('pharmacy_list')
+    return render(request, 'core/management/pharmacy_list.html', {
+        'pharmacies': PharmacyProfile.objects.select_related('user').annotate(sales_count=Count('sales')),
+        'form': form
+    })
+
 
 @login_required
+@role_required('GOVERNMENT')
 def pharmacy_edit(request, pk):
-    if request.user.role != 'GOVERNMENT': return redirect('dashboard_redirect')
     profile = get_object_or_404(PharmacyProfile, pk=pk)
+    form = PharmacyProfileForm(instance=profile)
     if request.method == 'POST':
-        profile.name, profile.address = request.POST.get('name'), request.POST.get('address')
-        profile.latitude, profile.longitude = float(request.POST.get('latitude')), float(request.POST.get('longitude'))
-        profile.save()
-        return redirect('pharmacy_list')
-    return render(request, 'core/management/pharmacy_edit.html', {'profile': profile})
+        form = PharmacyProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('pharmacy_list')
+    return render(request, 'core/management/pharmacy_edit.html', {'profile': profile, 'form': form})
+
 
 @login_required
+@role_required('GOVERNMENT')
+@require_POST
 def pharmacy_delete(request, pk):
-    if request.user.role != 'GOVERNMENT': return redirect('dashboard_redirect')
     profile = get_object_or_404(PharmacyProfile, pk=pk)
     user = profile.user
     profile.delete()
     user.delete()
     return redirect('pharmacy_list')
 
+
 @login_required
+@role_required('GOVERNMENT')
 def antibiotic_list(request):
-    if request.user.role != 'GOVERNMENT': return redirect('dashboard_redirect')
     query = request.GET.get('q', '')
     antibiotics = Antibiotic.objects.filter(Q(name__icontains=query) | Q(group__icontains=query)) if query else Antibiotic.objects.all()
+    form = AntibioticForm()
     if request.method == 'POST':
-        Antibiotic.objects.create(name=request.POST.get('name'), group=request.POST.get('group'), category=request.POST.get('category'))
-        return redirect('antibiotic_list')
-    return render(request, 'core/management/antibiotic_list.html', {'antibiotics': antibiotics, 'query': query})
+        form = AntibioticForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('antibiotic_list')
+    return render(request, 'core/management/antibiotic_list.html', {
+        'antibiotics': antibiotics, 'query': query, 'form': form
+    })
+
 
 @login_required
+@role_required('GOVERNMENT')
 def antibiotic_edit(request, pk):
-    if request.user.role != 'GOVERNMENT': return redirect('dashboard_redirect')
     antibiotic = get_object_or_404(Antibiotic, pk=pk)
+    form = AntibioticForm(instance=antibiotic)
     if request.method == 'POST':
-        antibiotic.name, antibiotic.group, antibiotic.category = request.POST.get('name'), request.POST.get('group'), request.POST.get('category')
-        antibiotic.save()
-        return redirect('antibiotic_list')
-    return render(request, 'core/management/antibiotic_edit.html', {'antibiotic': antibiotic})
+        form = AntibioticForm(request.POST, instance=antibiotic)
+        if form.is_valid():
+            form.save()
+            return redirect('antibiotic_list')
+    return render(request, 'core/management/antibiotic_edit.html', {'antibiotic': antibiotic, 'form': form})
+
 
 @login_required
+@role_required('GOVERNMENT')
+@require_POST
 def antibiotic_delete(request, pk):
-    if request.user.role != 'GOVERNMENT': return redirect('dashboard_redirect')
     get_object_or_404(Antibiotic, pk=pk).delete()
     return redirect('antibiotic_list')

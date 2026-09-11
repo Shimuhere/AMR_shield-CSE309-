@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from .dashboards import dashboard_redirect
 
 def landing_page(request):

@@ -38,7 +38,10 @@
                             </td>
                             <td class="px-6 py-4 text-right flex justify-end gap-3">
                                 <a href="{% url 'antibiotic_edit' a.id %}" class="text-blue-600 hover:underline font-bold text-xs uppercase tracking-tighter">Edit</a>
-                                <a href="{% url 'antibiotic_delete' a.id %}" onclick="return confirm('Remove this medication from the surveillance catalog?')" class="text-red-600 hover:underline font-bold text-xs uppercase tracking-tighter">Delete</a>
+                                <form method="post" action="{% url 'antibiotic_delete' a.id %}" onsubmit="return confirm('Remove this medication from the surveillance catalog?')" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-600 hover:underline font-bold text-xs uppercase tracking-tighter">Delete</button>
+                                </form>
                             </td>
                         </tr>
                         {% empty %}
@@ -54,6 +57,7 @@
                 <h2 class="text-lg font-bold mb-4">Add New Medication</h2>
                 <form method="post" class="space-y-4">
                     {% csrf_token %}
+                    {% include "core/includes/form_errors.html" %}
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Medication Name</label>
                         <input type="text" name="name" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm">

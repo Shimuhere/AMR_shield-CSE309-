@@ -1,26 +1,31 @@
-from django.db.models import Sum, Count, Avg
+from django.db.models import Avg, Count, Sum
+
 from ..models.accounts import PharmacyProfile
-from ..models.clinical import SaleRecord, Antibiotic
-from .risk import get_risk_level
+from ..models.clinical import SaleRecord
+from ..models.settings import SystemSettings
+from .risk import load_area_sales, score_area
+
 
 def generate_surveillance_summary():
     raw_data = SaleRecord.objects.values(
-        'pharmacy__address', 'antibiotic__name', 'pharmacy__name',
+        'pharmacy__address', 'antibiotic__name', 'antibiotic_id', 'pharmacy__name',
         'pharmacy__latitude', 'pharmacy__longitude'
     ).annotate(total_units=Sum('quantity')).order_by('pharmacy__address', 'antibiotic__name', '-total_units')
+
+    area_sales = load_area_sales()
+    thresholds = SystemSettings.load()
 
     structured_summary = {}
     for entry in raw_data:
         loc = entry['pharmacy__address'].split(',')[-1].strip()
         drug = entry['antibiotic__name']
-        
-        if loc not in structured_summary: structured_summary[loc] = {}
-        if drug not in structured_summary[loc]: structured_summary[loc][drug] = []
-            
-        antibiotic = Antibiotic.objects.get(name=drug)
-        risk, color = get_risk_level(entry['pharmacy__latitude'], entry['pharmacy__longitude'], antibiotic)
-        
-        structured_summary[loc][drug].append({
+
+        risk, color = score_area(
+            area_sales, thresholds, entry['antibiotic_id'],
+            entry['pharmacy__latitude'], entry['pharmacy__longitude'],
+        )
+
+        structured_summary.setdefault(loc, {}).setdefault(drug, []).append({
             'pharmacy': entry['pharmacy__name'], 'units': entry['total_units'],
             'risk_level': risk, 'color': color
         })

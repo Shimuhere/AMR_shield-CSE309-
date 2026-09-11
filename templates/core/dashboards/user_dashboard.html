@@ -44,6 +44,7 @@
                 <h2 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-100 pb-2">Add a new medicine</h2>
                 <form method="post" class="space-y-5">
                     {% csrf_token %}
+                {% include "core/includes/form_errors.html" %}
                     <div class="space-y-1 relative" id="antibiotic-dropdown-container">
                         <label class="block text-[10px] font-bold text-gray-500 uppercase">Medicine Name</label>
                         <div class="relative">

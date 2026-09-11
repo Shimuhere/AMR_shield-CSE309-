@@ -39,6 +39,7 @@
                 <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-8 border-b border-gray-100 pb-2">Record New Sale</h2>
                 <form method="post" class="space-y-8">
                     {% csrf_token %}
+                {% include "core/includes/form_errors.html" %}
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="space-y-1 relative" id="antibiotic-dropdown-container">

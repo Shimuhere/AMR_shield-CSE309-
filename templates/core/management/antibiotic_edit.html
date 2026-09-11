@@ -12,6 +12,7 @@
     <div class="data-card p-8">
         <form method="post" class="space-y-6">
             {% csrf_token %}
+                {% include "core/includes/form_errors.html" %}
             <div>
                 <label class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Medication Name</label>
                 <input type="text" name="name" value="{{ antibiotic.name }}" required class="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 outline-none text-sm">
