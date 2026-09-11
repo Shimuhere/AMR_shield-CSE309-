@@ -1,18 +1,47 @@
 import os
-import django
 import random
-from datetime import datetime
+import sys
+
+import django
+
+# `setup.py` is a symlink to this file, so neither sys.path[0] nor __file__
+# reliably points at the project root. Resolve through the link to find it.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 # Initialize Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'amr_shield_project.settings')
 django.setup()
 
+from django.core.management import call_command
+from django.db import connection
+
 # Modular Imports
 from core.models import User, Antibiotic, PharmacyProfile, SaleRecord, Prescription, SystemSettings
 
+
+def guard_against_remote_database():
+    """This script deletes every record, so refuse to point it at a real deployment.
+
+    The project reads DATABASE_URL, so a shell with the deployment environment
+    loaded would otherwise seed straight over production data.
+    """
+    if connection.vendor == 'sqlite' or os.environ.get('AMR_ALLOW_DESTRUCTIVE_SEED') == '1':
+        return
+    sys.exit(
+        f"Refusing to run: this deletes all data, and the configured database is "
+        f"{connection.vendor}, not a local SQLite file.\n"
+        "Unset DATABASE_URL to seed your local database, or set "
+        "AMR_ALLOW_DESTRUCTIVE_SEED=1 if you really intend to wipe this one."
+    )
+
+
 def run():
     print("--- AMR-Shield National Surveillance System Initialization ---")
-    
+    guard_against_remote_database()
+
+    print("[0/6] Applying database migrations...")
+    call_command('migrate', verbosity=0)
+
     # 1. Clear existing data
     print("[1/6] Purging clinical records...")
     SaleRecord.objects.all().delete()
