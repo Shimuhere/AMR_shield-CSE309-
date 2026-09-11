@@ -2,3 +2,6 @@ django==4.2.30
 djangorestframework
 pillow
 django-extensions
+dj-database-url
+psycopg2-binary
+whitenoise
