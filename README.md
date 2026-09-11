@@ -3,6 +3,12 @@
 
 AMR-Shield is a comprehensive clinical surveillance system designed to monitor antibiotic dispensing patterns and identify regional resistance risks in real-time.
 
+## 🌐 Live Deployment
+
+**https://amr-shield.vercel.app**
+
+Hosted on Vercel with a Neon Postgres database. The `main` branch deploys automatically on every push.
+
 ---
 
 ## 🚀 Quick Deployment Guide
